@@ -26,7 +26,9 @@ async function run() {
     const userCollection = client.db("MediShine").collection('users');
 
     app.get('/users', async (req, res)=>{
-        const result = await userCollection.find().toArray()
+        const email = req.query.email
+        const query = {userEmail: email}
+        const result = await userCollection.findOne(query)
         res.send(result)
     })
 
