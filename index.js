@@ -24,6 +24,7 @@ async function run() {
   try {
     
     const userCollection = client.db("MediShine").collection('users');
+    const medicineCollection = client.db("MediShine").collection('medicines');
 
     app.get('/users', async (req, res)=>{
         const email = req.query.email
@@ -42,6 +43,18 @@ async function run() {
         }
         const result = await userCollection.insertOne(newUser)
         res.send(result)
+    })
+
+    // medicen related API
+    app.get('/medicines', async (req, res)=>{
+      const result = await medicineCollection.find().toArray()
+      res.send(result)
+  })
+
+    app.post('/medicines', async(req,res)=>{
+      const newMedicien = req.body;
+      const result = await medicineCollection.insertOne(newMedicien)
+      res.send(result)
     })
 
     await client.db("admin").command({ ping: 1 });
