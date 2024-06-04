@@ -102,6 +102,20 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/advertisment/:id', async (req,res)=>{
+      const id = req.params.id;
+      const status = req.body
+      console.log(role, '==');
+      const query = {_id: new ObjectId(id)}
+      const updatestatus = {
+        $set: {
+          userRole: status.status
+        }
+      }
+      const result = await advertismentCollection.updateOne(query, updatestatus)
+      res.send(result)
+  })
+
     app.post('/advertisment', async (req, res) => {
       const newAvertis = req.body;
       const result = await advertismentCollection.insertOne(newAvertis)
