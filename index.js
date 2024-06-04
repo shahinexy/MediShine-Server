@@ -25,6 +25,7 @@ async function run() {
 
     const userCollection = client.db("MediShine").collection('users');
     const medicineCollection = client.db("MediShine").collection('medicines');
+    const medicineCategoryCollection = client.db("MediShine").collection('medicineCategory');
     const advertismentCollection = client.db("MediShine").collection('advertisment');
 
     // ===== User related API ======
@@ -77,6 +78,24 @@ async function run() {
       res.send(result)
     })
 
+    // ====== Category related API ======
+    app.get('/medicineCategory', async (req, res) => {
+      const result = await medicineCategoryCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.post('/medicineCategory', async (req,res)=>{
+      const newCategory = req.body;
+      const result = await medicineCategoryCollection.insertOne(newCategory)
+      res.send(result)
+    })
+
+    app.delete('/medicineCategory/:id', async (req,res)=>{
+      const query = {_id: new ObjectId(req.params.id)}
+      const result = await medicineCategoryCollection.deleteOne(query)
+      res.send(result)
+    })
+
     // ====== Advertisement related API ======
     app.get('/advertisment', async (req, res) => {
       const result = await advertismentCollection.find().toArray()
@@ -88,7 +107,6 @@ async function run() {
       const result = await advertismentCollection.insertOne(newAvertis)
       res.send(result)
     })
-
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
