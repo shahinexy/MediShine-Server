@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000
 
@@ -22,50 +22,68 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    
+
     const userCollection = client.db("MediShine").collection('users');
     const medicineCollection = client.db("MediShine").collection('medicines');
     const advertismentCollection = client.db("MediShine").collection('advertisment');
 
     // ===== User related API ======
-    app.get('/users', async (req, res)=>{
-        const email = req.query.email
-        const query = {userEmail: email}
-        const result = await userCollection.findOne(query)
+    app.get('/allUsers', async (req, res) => {
+      const result = await userCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/users', async (req, res) => {
+      const email = req.query.email
+      const query = { userEmail: email }
+      const result = await userCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.patch('/users/:id', async (req,res)=>{
+        const id = req.params.id;
+        const role = req.body
+        console.log(role, '==');
+        const query = {_id: new ObjectId(id)}
+        const updateRole = {
+          $set: {
+            userRole: role.userRole
+          }
+        }
+        const result = await userCollection.updateOne(query, updateRole)
         res.send(result)
     })
 
-    app.post('/users', async (req, res)=>{
-        const newUser = req.body;
-        console.log(newUser);
-        const query = {userEmail: newUser.userEmail}
-        const isExist = await userCollection.findOne(query)
-        if(isExist){
-            return res.send({ message: 'user already Exist', insertedId: null })
-        }
-        const result = await userCollection.insertOne(newUser)
-        res.send(result)
+    app.post('/users', async (req, res) => {
+      const newUser = req.body;
+      const query = { userEmail: newUser.userEmail }
+      const isExist = await userCollection.findOne(query)
+      if (isExist) {
+        return res.send({ message: 'user already Exist', insertedId: null })
+      }
+      const result = await userCollection.insertOne(newUser)
+      res.send(result)
     })
 
     // ====== Medicen related API ========
-    app.get('/medicines', async (req, res)=>{
+    app.get('/medicines', async (req, res) => {
       const result = await medicineCollection.find().toArray()
       res.send(result)
-  })
+    })
 
-    app.post('/medicines', async(req,res)=>{
+    app.post('/medicines', async (req, res) => {
       const newMedicien = req.body;
       const result = await medicineCollection.insertOne(newMedicien)
       res.send(result)
     })
 
     // ====== Advertisement related API ======
-    app.get('/advertisment', async (req, res)=>{
+    app.get('/advertisment', async (req, res) => {
       const result = await advertismentCollection.find().toArray()
       res.send(result)
-  })
+    })
 
-    app.post('/advertisment', async (req, res) =>{
+    app.post('/advertisment', async (req, res) => {
       const newAvertis = req.body;
       const result = await advertismentCollection.insertOne(newAvertis)
       res.send(result)
@@ -81,10 +99,10 @@ run().catch(console.dir);
 
 
 
-app.get('/',  (req, res)=>{
-    res.send("MideShine is running")
+app.get('/', (req, res) => {
+  res.send("MideShine is running")
 })
 
-app.listen(port, ()=>{
-    console.log('MideShine server is running on Port:', port);
+app.listen(port, () => {
+  console.log('MideShine server is running on Port:', port);
 })
