@@ -71,6 +71,12 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/medicines/email/:userEmail', async (req, res) => {
+      const query = {userEmail: req.params.userEmail}
+      const result = await medicineCollection.find(query).toArray()
+      res.send(result)
+    })
+
     app.post('/medicines', async (req, res) => {
       const newMedicien = req.body;
       const result = await medicineCollection.insertOne(newMedicien)
@@ -98,6 +104,12 @@ async function run() {
     // ====== Advertisement related API ======
     app.get('/advertisment', async (req, res) => {
       const result = await advertismentCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/advertisment/email/:userEmail', async (req, res) => {
+      const query = {userEmail: req.params.userEmail}
+      const result = await advertismentCollection.find(query).toArray()
       res.send(result)
     })
 
