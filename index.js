@@ -44,7 +44,6 @@ async function run() {
     app.patch('/users/:id', async (req,res)=>{
         const id = req.params.id;
         const role = req.body
-        console.log(role, '==');
         const query = {_id: new ObjectId(id)}
         const updateRole = {
           $set: {
@@ -105,11 +104,11 @@ async function run() {
     app.patch('/advertisment/:id', async (req,res)=>{
       const id = req.params.id;
       const status = req.body
-      console.log(role, '==');
+      console.log(status, '++');
       const query = {_id: new ObjectId(id)}
       const updatestatus = {
         $set: {
-          userRole: status.status
+          status: status.status
         }
       }
       const result = await advertismentCollection.updateOne(query, updatestatus)
