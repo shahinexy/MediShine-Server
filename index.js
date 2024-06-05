@@ -41,17 +41,17 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/users/:id', async (req,res)=>{
-        const id = req.params.id;
-        const role = req.body
-        const query = {_id: new ObjectId(id)}
-        const updateRole = {
-          $set: {
-            userRole: role.userRole
-          }
+    app.patch('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const role = req.body
+      const query = { _id: new ObjectId(id) }
+      const updateRole = {
+        $set: {
+          userRole: role.userRole
         }
-        const result = await userCollection.updateOne(query, updateRole)
-        res.send(result)
+      }
+      const result = await userCollection.updateOne(query, updateRole)
+      res.send(result)
     })
 
     app.post('/users', async (req, res) => {
@@ -83,14 +83,14 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/medicineCategory', async (req,res)=>{
+    app.post('/medicineCategory', async (req, res) => {
       const newCategory = req.body;
       const result = await medicineCategoryCollection.insertOne(newCategory)
       res.send(result)
     })
 
-    app.delete('/medicineCategory/:id', async (req,res)=>{
-      const query = {_id: new ObjectId(req.params.id)}
+    app.delete('/medicineCategory/:id', async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) }
       const result = await medicineCategoryCollection.deleteOne(query)
       res.send(result)
     })
@@ -101,11 +101,11 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/advertisment/:id', async (req,res)=>{
+    app.patch('/advertisment/:id', async (req, res) => {
       const id = req.params.id;
       const status = req.body
       console.log(status, '++');
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const updatestatus = {
         $set: {
           status: status.status
@@ -113,13 +113,21 @@ async function run() {
       }
       const result = await advertismentCollection.updateOne(query, updatestatus)
       res.send(result)
-  })
+    })
 
     app.post('/advertisment', async (req, res) => {
       const newAvertis = req.body;
       const result = await advertismentCollection.insertOne(newAvertis)
       res.send(result)
     })
+
+    app.delete('/advertisment/delete/:id', async (req,res)=>{
+      const query = {_id: new ObjectId(req.params.id)}
+      const result = await advertismentCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
