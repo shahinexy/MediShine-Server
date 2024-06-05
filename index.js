@@ -113,10 +113,15 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/advertisment/approved', async (req, res) => {
+      const query = { status: 'approve' }
+      const result = await advertismentCollection.find(query).toArray()
+      res.send(result)
+    })
+
     app.patch('/advertisment/:id', async (req, res) => {
       const id = req.params.id;
       const status = req.body
-      console.log(status, '++');
       const query = { _id: new ObjectId(id) }
       const updatestatus = {
         $set: {
