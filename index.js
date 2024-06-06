@@ -28,6 +28,7 @@ async function run() {
     const medicineCollection = client.db("MediShine").collection('medicines');
     const medicineCategoryCollection = client.db("MediShine").collection('medicineCategory');
     const advertismentCollection = client.db("MediShine").collection('advertisment');
+    const cartItemCollection = client.db("MediShine").collection('cartItem');
 
     // ======= JWT related api ========
     app.post('/jwt', async (req, res) => {
@@ -133,6 +134,18 @@ async function run() {
     app.post('/medicines', verifyToken,  async (req, res) => {
       const newMedicien = req.body;
       const result = await medicineCollection.insertOne(newMedicien)
+      res.send(result)
+    })
+
+    // ===== Cart Item related API =========
+    app.get('/cartItem', verifyToken, async (req, res) => {
+      const result = await cartItemCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.post('/cartItem', verifyToken, async (req, res)=>{
+      const newItem = req.body;
+      const result = await cartItemCollection.insertOne(newItem)
       res.send(result)
     })
 
