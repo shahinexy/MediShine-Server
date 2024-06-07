@@ -143,11 +143,26 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/cartItem/buyerEmail/:email', verifyToken, async (req, res) => {
+      const email = req.params.email
+      const query = { buyerEmail: email }
+      const result = await cartItemCollection.find(query).toArray()
+      res.send(result)
+    })
+
     app.post('/cartItem', verifyToken, async (req, res)=>{
       const newItem = req.body;
       const result = await cartItemCollection.insertOne(newItem)
       res.send(result)
     })
+
+    app.delete('/cartItem/:id', verifyToken, async (req, res) => {
+      const query = { medicineId: req.params.id }
+      console.log(query);
+      const result = await cartItemCollection.deleteOne(query)
+      res.send(result)
+    })
+
 
     // ====== Category related API ======
     app.get('/medicineCategory', async (req, res) => {
