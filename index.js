@@ -163,6 +163,13 @@ async function run() {
       res.send(result)
     })
 
+    app.post('/cartItem/deleteAll', verifyToken, async (req, res) => {
+      const ids = req.body 
+      const query = {_id: {$in: ids.map(id => id)}}
+      const result = await cartItemCollection.deleteMany(query)
+      res.send(result)
+    })
+
 
     // ====== Category related API ======
     app.get('/medicineCategory', async (req, res) => {
