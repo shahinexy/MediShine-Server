@@ -156,16 +156,28 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/cartItem/update/:id', async(req, res)=>{
+      const medicine = req.body
+      const query = {_id: new ObjectId(req.params.id)}
+      const updateMedicine = {
+        $set:{
+          quantity: medicine.quantity,
+        }
+      }
+      const result = await cartItemCollection.updateOne(query, updateMedicine)
+      res.send(result)
+    })
+
     app.delete('/cartItem/:id', verifyToken, async (req, res) => {
-      const query = { medicineId: req.params.id }
-      console.log(query);
+      const query = { _id: new ObjectId(req.params.id)}
       const result = await cartItemCollection.deleteOne(query)
       res.send(result)
     })
 
     app.post('/cartItem/deleteAll', verifyToken, async (req, res) => {
       const ids = req.body 
-      const query = {_id: {$in: ids.map(id => id)}}
+      const query = {_id: {$in: ids.map(id => new ObjectId(id))}}
+      console.log(query);
       const result = await cartItemCollection.deleteMany(query)
       res.send(result)
     })
