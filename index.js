@@ -8,7 +8,16 @@ const port = process.env.PORT || 5000
 
 // midlewear
 app.use(express.json())
-app.use(cors())
+//Must remove "/" from your production URL
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://medishine-4cd26.web.app",
+      "https://medishine-4cd26.firebaseapp.com",
+    ]
+  })
+);
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.76h69in.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -125,6 +134,11 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/discountMedicines', async (req, res) => {
+      const result = await medicineCollection.find({discount: {$gt: 0}}).toArray()
+      res.send(result)
+    })
+
     app.get('/medicines/email/:userEmail', verifyToken, async (req, res) => {
       const query = { userEmail: req.params.userEmail }
       const result = await medicineCollection.find(query).toArray()
@@ -133,7 +147,6 @@ async function run() {
 
     app.get('/medicines/category/:category', async(req, res)=>{
       const query = {category: req.params.category}
-      console.log(req.params.category);
       const result = await medicineCollection.find(query).toArray()
       res.send(result)
     })
