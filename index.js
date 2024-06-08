@@ -131,9 +131,22 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/medicines/category/:category', async(req, res)=>{
+      const query = {category: req.params.category}
+      console.log(req.params.category);
+      const result = await medicineCollection.find(query).toArray()
+      res.send(result)
+    })
+
     app.post('/medicines', verifyToken,  async (req, res) => {
       const newMedicien = req.body;
       const result = await medicineCollection.insertOne(newMedicien)
+      res.send(result)
+    })
+
+    app.delete('/medicines/:id', verifyToken, async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id)}
+      const result = await medicineCollection.deleteOne(query)
       res.send(result)
     })
 
