@@ -289,6 +289,32 @@ async function run() {
       });
     })
 
+    // get payment data
+    app.get('/payments', async (req,res)=>{
+      const result = await paymentCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/userPayments/:email', async (req,res)=>{
+      const query = {userEmail: req.params.email}
+      const result = await paymentCollection.find(query).toArray()
+      res.send(result)
+    })
+    
+    app.patch('/payments/:id',  verifyToken, verifyAmin, async (req, res) => {
+      const id = req.params.id;
+      const status = req.body
+      console.log(status);
+      const query = { _id: new ObjectId(id) }
+      const updatestatus = {
+        $set: {
+          status: status.status
+        }
+      }
+      const result = await paymentCollection.updateOne(query, updatestatus)
+      res.send(result)
+    })
+
     app.post('/payments', verifyToken, async(req,res)=>{
       const payment = req.body
       const paymentResult = await paymentCollection.insertOne(payment)
@@ -300,14 +326,12 @@ async function run() {
     })
 
 
-
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   }
 }
 run().catch(console.dir);
-
 
 
 app.get('/', (req, res) => {
