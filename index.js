@@ -132,12 +132,33 @@ async function run() {
 
     // ====== Medicen related API ========
     app.get('/medicines', async (req, res) => {
-      const result = await medicineCollection.find().toArray()
-      res.send(result)
+      const filter = req.query;
+      const query = {}
+      const options = {
+        sort: {
+          price: filter.sort === 'asc' ? 1 : -1
+        },
+        collation: {
+          locale: "en_US",
+          numericOrdering: true
+        }
+      }
+
+      if (filter.sort === "asc" || filter.sort === "dsc") {
+        const cursor = medicineCollection.find(query, options)
+        const result = await cursor.toArray()
+        res.send(result)
+      } else {
+        const result = await medicineCollection.find().toArray()
+        res.send(result)
+      }
+
+
+
     })
 
     app.get('/discountMedicines', async (req, res) => {
-      const result = await medicineCollection.find({discount: {$gt: 0}}).toArray()
+      const result = await medicineCollection.find({ discount: { $gt: 0 } }).toArray()
       res.send(result)
     })
 
@@ -147,26 +168,26 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/medicines/category/:category', async(req, res)=>{
-      const query = {category: req.params.category}
+    app.get('/medicines/category/:category', async (req, res) => {
+      const query = { category: req.params.category }
       const result = await medicineCollection.find(query).toArray()
       res.send(result)
     })
 
-    app.post('/medicines', verifyToken,  async (req, res) => {
+    app.post('/medicines', verifyToken, async (req, res) => {
       const newMedicien = req.body;
       const result = await medicineCollection.insertOne(newMedicien)
       res.send(result)
     })
 
     app.delete('/medicines/:id', verifyToken, async (req, res) => {
-      const query = { _id: new ObjectId(req.params.id)}
+      const query = { _id: new ObjectId(req.params.id) }
       const result = await medicineCollection.deleteOne(query)
       res.send(result)
     })
 
     // ===== Cart Item related API =========
-    app.get('/cartItem', verifyToken, async (req, res) => {
+    app.get('/cartItem', async (req, res) => {
       const result = await cartItemCollection.find().toArray()
       res.send(result)
     })
@@ -178,17 +199,17 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/cartItem', verifyToken, async (req, res)=>{
+    app.post('/cartItem', verifyToken, async (req, res) => {
       const newItem = req.body;
       const result = await cartItemCollection.insertOne(newItem)
       res.send(result)
     })
 
-    app.patch('/cartItem/update/:id', async(req, res)=>{
+    app.patch('/cartItem/update/:id', async (req, res) => {
       const medicine = req.body
-      const query = {_id: new ObjectId(req.params.id)}
+      const query = { _id: new ObjectId(req.params.id) }
       const updateMedicine = {
-        $set:{
+        $set: {
           quantity: medicine.quantity,
         }
       }
@@ -197,14 +218,14 @@ async function run() {
     })
 
     app.delete('/cartItem/:id', verifyToken, async (req, res) => {
-      const query = { _id: new ObjectId(req.params.id)}
+      const query = { _id: new ObjectId(req.params.id) }
       const result = await cartItemCollection.deleteOne(query)
       res.send(result)
     })
 
     app.post('/cartItem/deleteAll', verifyToken, async (req, res) => {
-      const ids = req.body 
-      const query = {_id: {$in: ids.map(id => new ObjectId(id))}}
+      const ids = req.body
+      const query = { _id: { $in: ids.map(id => new ObjectId(id)) } }
       const result = await cartItemCollection.deleteMany(query)
       res.send(result)
     })
@@ -229,7 +250,7 @@ async function run() {
     })
 
     // ====== Advertisement related API ======
-    app.get('/advertisment',  verifyToken, verifyAmin, async (req, res) => {
+    app.get('/advertisment', verifyToken, verifyAmin, async (req, res) => {
       const result = await advertismentCollection.find().toArray()
       res.send(result)
     })
@@ -240,13 +261,13 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/advertisment/email/:userEmail',  verifyToken, async (req, res) => {
+    app.get('/advertisment/email/:userEmail', verifyToken, async (req, res) => {
       const query = { userEmail: req.params.userEmail }
       const result = await advertismentCollection.find(query).toArray()
       res.send(result)
     })
 
-    app.patch('/advertisment/:id',  verifyToken, verifyAmin, async (req, res) => {
+    app.patch('/advertisment/:id', verifyToken, verifyAmin, async (req, res) => {
       const id = req.params.id;
       const status = req.body
       const query = { _id: new ObjectId(id) }
@@ -259,13 +280,13 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/advertisment',  verifyToken, async (req, res) => {
+    app.post('/advertisment', verifyToken, async (req, res) => {
       const newAvertis = req.body;
       const result = await advertismentCollection.insertOne(newAvertis)
       res.send(result)
     })
 
-    app.delete('/advertisment/delete/:id',  verifyToken, verifyAmin, async (req, res) => {
+    app.delete('/advertisment/delete/:id', verifyToken, verifyAmin, async (req, res) => {
       const query = { _id: new ObjectId(req.params.id) }
       const result = await advertismentCollection.deleteOne(query)
       res.send(result)
@@ -273,9 +294,9 @@ async function run() {
 
 
     // ======== Payment intent ======
-    app.post('/create-payment-intent', async (req,res)=>{
-      const {price} = req.body;
-      const amount = parseInt(price*100)
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100)
 
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -289,25 +310,43 @@ async function run() {
     })
 
     // get payment data
-    app.get('/payments', async (req,res)=>{
-      const result = await paymentCollection.find().toArray()
-      res.send(result)
+    app.get('/payments', async (req, res) => {
+      const { filter } = req.query;
+      const [startDateStr, endDateStr] = filter.split(',');
+      const startDate = new Date(startDateStr)
+      const endDate = new Date(endDateStr)
+      const query = {
+        date: {
+          $gte: startDate,
+          $lte: endDate
+        }
+      };
+      if(filter === true){
+        console.log('inside query', filter);
+        const result = await paymentCollection.find(query).toArray()
+        res.send(result)
+      }
+      else{
+        console.log('inside normal');
+        const result = await paymentCollection.find().toArray()
+        res.send(result)
+      }
     })
 
-    app.get('/userPayments/:email', async (req,res)=>{
-      const query = {userEmail: req.params.email}
+    app.get('/userPayments/:email', async (req, res) => {
+      const query = { userEmail: req.params.email }
       const result = await paymentCollection.find(query).toArray()
       res.send(result)
     })
 
-    app.get('/sellerPayments/:email', async (req,res)=>{
+    app.get('/sellerPayments/:email', async (req, res) => {
       const email = req.params.email
-      const query = {sellerEmails: {$in: [email]}}
+      const query = { sellerEmails: { $in: [email] } }
       const result = await paymentCollection.find(query).toArray()
       res.send(result)
     })
-    
-    app.patch('/payments/:id',  verifyToken, verifyAmin, async (req, res) => {
+
+    app.patch('/payments/:id', verifyToken, verifyAmin, async (req, res) => {
       const id = req.params.id;
       const status = req.body
       const query = { _id: new ObjectId(id) }
@@ -320,13 +359,60 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/payments', verifyToken, async(req,res)=>{
+    app.post('/payments', verifyToken, async (req, res) => {
       const payment = req.body
       const paymentResult = await paymentCollection.insertOne(payment)
       // delete medicine
-      const query = {_id: {$in: payment.medicineIds.map(id => new ObjectId(id))}}
+      const query = { _id: { $in: payment.medicineIds.map(id => new ObjectId(id)) } }
       const deleteMedicine = await cartItemCollection.deleteMany(query)
-      res.send({paymentResult, deleteMedicine})
+      res.send({ paymentResult, deleteMedicine })
+    })
+
+    // ===== Admin stats ========
+    app.get('/admin-stats', verifyToken, verifyAmin, async (req, res) => {
+      const result = await paymentCollection.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalRevenue: {
+              $sum: '$price'
+            }
+          }
+        }
+      ]).toArray()
+      const revenue = result.length > 0 ? result[0].totalRevenue : 0;
+
+      const paidResult = await paymentCollection.aggregate([
+        {
+          $match: { status: 'paid' }
+        },
+        {
+          $group: {
+            _id: null,
+            paid: {
+              $sum: '$price'
+            }
+          }
+        }
+      ]).toArray()
+      const totalPaid = paidResult.length > 0 ? paidResult[0].paid : 0;
+
+      const pendingResult = await paymentCollection.aggregate([
+        {
+          $match: { status: 'pending' }
+        },
+        {
+          $group: {
+            _id: null,
+            paid: {
+              $sum: '$price'
+            }
+          }
+        }
+      ]).toArray()
+      const TotalPending = pendingResult.length > 0 ? pendingResult[0].paid : 0;
+
+      res.send({ revenue, totalPaid, TotalPending })
     })
 
 
