@@ -133,6 +133,10 @@ async function run() {
     // ====== Medicen related API ========
     app.get('/medicines', async (req, res) => {
       const filter = req.query;
+
+      const page = parseInt(req.query.page)
+      const size = parseInt(req.query.size)
+      console.log(page, size);
       const query = {}
       const options = {
         sort: {
@@ -146,15 +150,17 @@ async function run() {
 
       if (filter.sort === "asc" || filter.sort === "dsc") {
         const cursor = medicineCollection.find(query, options)
-        const result = await cursor.toArray()
+        const result = await cursor.skip(page * size).limit(size).toArray()
         res.send(result)
       } else {
-        const result = await medicineCollection.find().toArray()
+        const result = await medicineCollection.find().skip(page * size).limit(size).toArray()
         res.send(result)
       }
+    })
 
-
-
+    app.get('/medicinesCount', async(req,res)=>{
+      const count = await medicineCollection.estimatedDocumentCount()
+      res.send({count})
     })
 
     app.get('/discountMedicines', async (req, res) => {
