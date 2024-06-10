@@ -205,7 +205,6 @@ async function run() {
     app.post('/cartItem/deleteAll', verifyToken, async (req, res) => {
       const ids = req.body 
       const query = {_id: {$in: ids.map(id => new ObjectId(id))}}
-      console.log(query);
       const result = await cartItemCollection.deleteMany(query)
       res.send(result)
     })
@@ -300,11 +299,17 @@ async function run() {
       const result = await paymentCollection.find(query).toArray()
       res.send(result)
     })
+
+    app.get('/sellerPayments/:email', async (req,res)=>{
+      const email = req.params.email
+      const query = {sellerEmails: {$in: [email]}}
+      const result = await paymentCollection.find(query).toArray()
+      res.send(result)
+    })
     
     app.patch('/payments/:id',  verifyToken, verifyAmin, async (req, res) => {
       const id = req.params.id;
       const status = req.body
-      console.log(status);
       const query = { _id: new ObjectId(id) }
       const updatestatus = {
         $set: {
@@ -318,7 +323,6 @@ async function run() {
     app.post('/payments', verifyToken, async(req,res)=>{
       const payment = req.body
       const paymentResult = await paymentCollection.insertOne(payment)
-      console.log(payment);
       // delete medicine
       const query = {_id: {$in: payment.medicineIds.map(id => new ObjectId(id))}}
       const deleteMedicine = await cartItemCollection.deleteMany(query)
