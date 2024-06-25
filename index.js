@@ -136,7 +136,6 @@ async function run() {
 
       const page = parseInt(req.query.page)
       const size = parseInt(req.query.size)
-      console.log(page, size);
       const query = {}
       const options = {
         sort: {
@@ -158,9 +157,9 @@ async function run() {
       }
     })
 
-    app.get('/medicinesCount', async(req,res)=>{
+    app.get('/medicinesCount', async (req, res) => {
       const count = await medicineCollection.estimatedDocumentCount()
-      res.send({count})
+      res.send({ count })
     })
 
     app.get('/discountMedicines', async (req, res) => {
@@ -183,6 +182,20 @@ async function run() {
     app.post('/medicines', verifyToken, async (req, res) => {
       const newMedicien = req.body;
       const result = await medicineCollection.insertOne(newMedicien)
+      res.send(result)
+    })
+
+    app.patch('/medicine/:id', async (req,res)=>{
+      const medicineData = req.body
+      console.log(medicineData);
+      const query = { _id: new ObjectId(req.params.id) };
+      const updateMedicineData = {
+        $set: {
+          ...medicineData
+        }
+      }
+      console.log(updateMedicineData);
+      const result = await medicineCollection.updateOne(query, updateMedicineData)
       res.send(result)
     })
 
@@ -211,7 +224,7 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/cartItem/update/:id', async (req, res) => {
+    app.patch('/cartItem/update/:id', verifyToken, async (req, res) => {
       const medicine = req.body
       const query = { _id: new ObjectId(req.params.id) }
       const updateMedicine = {
@@ -318,21 +331,22 @@ async function run() {
     // get payment data
     app.get('/payments', async (req, res) => {
       const { filter } = req.query;
-      const [startDateStr, endDateStr] = filter.split(',');
-      const startDate = new Date(startDateStr)
-      const endDate = new Date(endDateStr)
-      const query = {
-        date: {
-          $gte: startDate,
-          $lte: endDate
-        }
-      };
-      if(filter === true){
-        console.log('inside query', filter);
+      if (filter) {
+        const [startDateStr, endDateStr] = filter.split(',');
+        const startDate = new Date(startDateStr).getTime()
+        const endDate = new Date(endDateStr).getTime()
+        const query = {
+          date: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        };
+        console.log(query);
         const result = await paymentCollection.find(query).toArray()
+        console.log('inside query', result);
         res.send(result)
       }
-      else{
+      else {
         console.log('inside normal');
         const result = await paymentCollection.find().toArray()
         res.send(result)
